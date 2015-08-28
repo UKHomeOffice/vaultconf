@@ -1,0 +1,65 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+require 'methadone'
+require 'vaultconf.rb'
+
+class App
+  include Methadone::Main
+  include Methadone::CLILogging
+
+  main do # Add args you want: |like,so|
+    # Working code
+    require 'curb'
+    url = "https://vault-dev-dstorage.notprod.homeoffice.gov.uk/v1/auth/userpass/login/writer/"
+    http = Curl.post(url, '{"password":"writer"}')
+    puts http.body_str
+
+
+  # ACTUAL CODE
+  # Arguments: username, password, policies folder, users yaml file, vault server
+
+
+  # Authenticate with credentials that are passed into the program, saving the token
+
+  # Get a list of all files in the policies folder, which should be another argument to the program
+
+  # Iterate through the files in the policy folder
+    # Read the file
+    # Use vault to add the policy in
+
+  # Open the yaml file pointed to in the users argument
+
+  # Iterate through each of the users
+  # Generate a password
+  # Use vault to add the user with the policies associated with the user
+
+  end
+
+  # supplemental methods here
+
+  # Declare command-line interface here
+
+  # description "one line description of your app"
+  #
+  # Accept flags via:
+  # on("--flag VAL","Some flag")
+  # options[flag] will contain VAL
+  #
+  # Specify switches via:
+  # on("--[no-]switch","Some switch")
+  #
+  # Or, just call OptionParser methods on opts
+  #
+  # Require an argument
+  # arg :some_arg
+  #
+  # # Make an argument optional
+  # arg :optional_arg, :optional
+
+  version Vaultconf::VERSION
+
+  use_log_level_option :toggle_debug_on_signal => 'USR1'
+
+  go!
+end
