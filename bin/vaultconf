@@ -10,29 +10,27 @@ class App
 
   main do # Add args you want: |like,so|
 
-  # ACTUAL CODE
-  # Arguments: username, password, config location, vault server address
-  server = options['a']
-  user = options['u']
-  password = options['p']
-  config = options['c']
+    # ACTUAL CODE
+    # Arguments: username, password, config location, vault server address
+    server = options['a']
+    user = options['u']
+    password = options['p']
+    config = options['c']
 
-  # Authenticate with credentials that are passed into the program, saving the token
-    authtoken = Vaultconf.get_auth_token(user,password,server)
+    # Authenticate with credentials that are passed into the program, saving the token
+    authtoken = Vaultconf.get_auth_token(user, password, server)
 
-    puts "The auth token is: "
-    puts authtoken
-  # Get a list of all files in the policies folder, which should be another argument to the program
+    # Get a list of all files in the policies folder, which should be another argument to the program
 
-  # Iterate through the files in the policy folder
+    # Iterate through the files in the policy folder
     # Read the file
     # Use vault to add the policy in
 
-  # Open the yaml file pointed to in the users argument
+    # Open the yaml file pointed to in the users argument
 
-  # Iterate through each of the users
-  # Generate a password
-  # Use vault to add the user with the policies associated with the user
+    # Iterate through each of the users
+    # Generate a password
+    # Use vault to add the user with the policies associated with the user
 
   end
 
