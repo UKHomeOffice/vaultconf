@@ -3,6 +3,7 @@
 require 'optparse'
 require 'methadone'
 require 'vaultconf.rb'
+require 'vault'
 
 class App
   include Methadone::Main
@@ -20,6 +21,11 @@ class App
     # Authenticate with credentials that are passed into the program, saving the token
     authtoken = Vaultconf.get_auth_token(user, password, server)
 
+    # Setup Vault singleton
+    Vault.address = server
+    Vault.token = authtoken
+
+    Vaultconf.add_policies_to_vault(Vault, config)
     # Get a list of all files in the policies folder, which should be another argument to the program
 
     # Iterate through the files in the policy folder
