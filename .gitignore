@@ -2,3 +2,6 @@
 results.html
 pkg
 html
+*.iml
+.idea/*
+Gemfile.lock

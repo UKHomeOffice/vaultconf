@@ -2,9 +2,7 @@ Feature: vaultconf can add users with policies to a vault server
 
   Scenario: vaultconf can add policies to vault
     Given I have a vault server running
-    And a root user exists on my server
-    And I have a folder at /tmp/policies containing vault policies
-    When I run "vaultconf policies /tmp/policies -u user -p password --server http://localhost:8200"
+    When I run vaultconf policies mypolicylocation -u user -p password --server http://localhost:8200
     Then I should be able to see these policies in vault
 
   Scenario: vaultconf can add users to vault
