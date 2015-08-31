@@ -1,3 +1,11 @@
-path "secret/*" {
-  policy = "read"
+{
+  "path": [
+    {
+      "secret/*": [
+        {
+          "policy": "read"
+        }
+      ]
+    }
+  ]
 }

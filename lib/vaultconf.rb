@@ -11,17 +11,15 @@ module Vaultconf
     return token
   end
 
-  def self.add_policies_to_vault(vault, config)
-    # Read in each policy in the config directory
-    Dir.foreach(config) do |policy_file|
+  def self.add_policies_to_vault(vault, policy_dir)
+    Dir.foreach(policy_dir) do |policy_file|
       next if policy_file == '.' or policy_file == '..'
       policy_name = Helpers.remove_file_extension(policy_file)
-      vault.logical.write("sys/policy/#{policy_name}", policy: "Yay")
-      puts policy_file
+      policy_raw = File.read(policy_dir + '/' + policy_file)
+      policy_hash = JSON.parse(policy_raw)
+      vault.logical.write("sys/policy/#{policy_name}", policy_hash)
+      puts "#{policy_file} written to #{policy_name} policy"
     end
-
-    # Add each policy to the vault server
-
   end
 end
 

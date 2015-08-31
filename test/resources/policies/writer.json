@@ -1,3 +1,4 @@
-path "secret/*" {
-  policy = "write"
+{
+  "path": "secret/*",
+  "policy": "write"
 }
