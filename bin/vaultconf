@@ -18,6 +18,7 @@ class App
     password = options['p']
     config = options['c']
 
+
     # Authenticate with credentials that are passed into the program, saving the token
     authtoken = Vaultconf.get_auth_token(user, password, server)
     # Setup Vault singleton

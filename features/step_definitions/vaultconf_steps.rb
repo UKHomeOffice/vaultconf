@@ -17,6 +17,7 @@ Given(/^I have a vault server running$/) do
   body = JSON.parse(http.body_str)
   Vault.token = body['auth']['client_token']
 
+  puts Dir.pwd
   # Could improve this by running a server in Ruby code and grabbing the root token for further actions.... but it is a pain
   # @server = fork do
   #   exec "vault server -dev"
@@ -25,12 +26,13 @@ Given(/^I have a vault server running$/) do
 end
 
 
-When(/^I run vaultconf policies mypolicylocation \-u user \-p password \-\-server http:\/\/localhost:8200$/) do
-  policy_path = File.expand_path('../../support/policies', __FILE__)
-  Dir.foreach(policy_path) do |policy_file|
-    next if policy_file == '.' or policy_file == '..'
-    # do work on real items
-    puts policy_file
-  #   TODO: Look at the methadone tutorial to see how I can call my command line application from here
-  end
+When(/^I do "vaultconf \-c test\/resources\/policies \-u user \-p password \-a http:\/\/localhost:8200"$/) do
+  `bundle exec bin/vaultconf policies test/resources/policies -u user -p password -a http://localhost:8200 -c test/resources/policies`
+end
+
+Then(/^I should be able to see these policies in vault$/) do
+  policies = Vault.sys.policies
+#   TODO: Add assertion that checks that the policies that have been added are only reader and writer
+
+#   TODO: Add an after hook that removes all policies from vault
 end

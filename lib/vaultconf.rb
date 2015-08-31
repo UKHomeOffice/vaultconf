@@ -23,7 +23,6 @@ module Vaultconf
 end
 
 
-
 module Helpers
   def self.remove_file_extension(filename)
     File.basename(filename, File.extname(filename))
