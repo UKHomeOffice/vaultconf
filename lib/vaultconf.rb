@@ -16,8 +16,7 @@ module Vaultconf
       next if policy_file == '.' or policy_file == '..'
       policy_name = Helpers.remove_file_extension(policy_file)
       policy_raw = File.read(policy_dir + '/' + policy_file)
-      policy_hash = JSON.parse(policy_raw)
-      vault.logical.write("sys/policy/#{policy_name}", policy_hash)
+      vault.sys.put_policy(policy_name, policy_raw)
       puts "#{policy_file} written to #{policy_name} policy"
     end
   end
