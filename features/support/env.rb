@@ -1,5 +1,6 @@
 require 'aruba/cucumber'
 require 'methadone/cucumber'
+require 'vault'
 
 ENV['PATH'] = "#{File.expand_path(File.dirname(__FILE__) + '/../../bin')}#{File::PATH_SEPARATOR}#{ENV['PATH']}"
 LIB_DIR = File.join(File.expand_path(File.dirname(__FILE__)),'..','..','lib')
@@ -13,4 +14,5 @@ end
 
 After do
   ENV['RUBYLIB'] = @original_rubylib
+  Vault.sys.policies.select{|policy| policy != 'root'}.each { |policy| Vault.sys.delete_policy(policy) }
 end

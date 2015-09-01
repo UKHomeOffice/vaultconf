@@ -38,5 +38,4 @@ Then(/^I should be able to see these policies in vault$/) do
   readerPolicy = Vault.sys.policy('reader')
   expect(writerPolicy.rules.gsub(/\s+/, "")).to eq('{"path":{"secret/*":{"policy":"write"}}}')
   expect(readerPolicy.rules.gsub(/\s+/, "")).to eq('{"path":{"secret/*":{"policy":"read"}}}')
-#   TODO: Add an after hook that removes all policies from vault
 end
