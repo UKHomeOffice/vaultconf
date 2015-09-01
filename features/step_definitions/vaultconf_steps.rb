@@ -32,7 +32,11 @@ end
 
 Then(/^I should be able to see these policies in vault$/) do
   policies = Vault.sys.policies
-#   TODO: Add assertion that checks that the policies that have been added are only reader and writer
-
+  expect(policies.include?('writer')).to eq(true)
+  expect(policies.include?('reader')).to eq(true)
+  writerPolicy = Vault.sys.policy('writer')
+  readerPolicy = Vault.sys.policy('reader')
+  expect(writerPolicy.rules.gsub(/\s+/, "")).to eq('{"path":{"secret/*":{"policy":"write"}}}')
+  expect(readerPolicy.rules.gsub(/\s+/, "")).to eq('{"path":{"secret/*":{"policy":"read"}}}')
 #   TODO: Add an after hook that removes all policies from vault
 end
