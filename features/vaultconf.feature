@@ -1,9 +1,9 @@
 Feature: vaultconf can add users with policies to a vault server
 
-#  Scenario: vaultconf can add policies to vault
-#    Given I have a vault server running
-#    When I do "vaultconf policies -c test/resources/policies -u user -p password -a http://localhost:8200"
-#    Then I should be able to see these policies in vault
+  Scenario: vaultconf can add policies to vault
+    Given I have a vault server running
+    When I do "vaultconf policies -c test/resources/policies -u user -p password -a http://localhost:8200"
+    Then I should be able to see these policies in vault
 
   Scenario: vaultconf can add users to vault
     Given I have a vault server running
