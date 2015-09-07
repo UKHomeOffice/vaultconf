@@ -1,11 +1,7 @@
-# Vaultconf
-
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/vaultconf`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+# Vpnconfig
+A command line tool to allow use of a yaml VPN configuration file to push this config to Skyscape
 
 ## Installation
-
 Add this line to your application's Gemfile:
 
 ```ruby
@@ -14,15 +10,32 @@ gem 'vaultconf'
 
 And then execute:
 
-    $ bundle
+    $ bundle install
 
 Or install it yourself as:
 
     $ gem install vaultconf
+    
+Require it in your ruby code using:
+require 'vaultconf'
 
 ## Usage
+Run with option --help to show command line help.
 
-TODO: Write usage instructions here
+Example command line with gem installed, to add policies to your vault server:
+```bash
+vaultconf policies -c test/resources/policies -u user -p password -a http://localhost:8200
+```
+And to add users with associated policies to your vault server:
+```bash
+vaultconf users -c test/resources/users.yaml -u user -p password -a http://localhost:8200
+```
+
+Example command line if you have cloned the repository without installing as a gem:
+bundle exec ./bin/vaultconf policies -c test/resources/policies -u user -p password -a http://localhost:8200
+
+Example policies directory structure is provided in test/resources/policies.
+Example users yaml structure is provided in test/resources/users/users/yaml
 
 ## Development
 
@@ -32,7 +45,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-1. Fork it ( https://github.com/[my-github-username]/vaultconf/fork )
+1. Fork it ( https://github.com/UKHomeOffice/vcloud_ipec-vpn/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
