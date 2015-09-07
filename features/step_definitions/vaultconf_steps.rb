@@ -1,33 +1,20 @@
 require 'curb'
 require 'vault'
+require 'json'
+
 
 Given(/^I have a vault server running$/) do
-  # This step just requires that outside of these tests you have a vault server running in dev mode, with the user auth backend enabled,
-  # and a user of "user" with password "password" that has root access
-
-  # To start the server you must do:
-  # vault server -dev
-  # vault auth-enable userpass
-  # vault write auth/userpass/users/user password=password policies=root
-  address = 'http://127.0.0.1:8200'
-  Vault.address = address
-  username = 'user'
-  loginUrl = "#{address}/v1/auth/userpass/login/#{username}"
-  http = Curl.post(loginUrl, '{"password":"password"}')
-  body = JSON.parse(http.body_str)
-  Vault.token = body['auth']['client_token']
-
-  puts Dir.pwd
-  # Could improve this by running a server in Ruby code and grabbing the root token for further actions.... but it is a pain
-  # @server = fork do
-  #   exec "vault server -dev"
-  # end
-  # Process.detach(@server)
+  setup_vault_server
+  login_to_vault
 end
 
 
-When(/^I do "vaultconf \-c test\/resources\/policies \-u user \-p password \-a http:\/\/localhost:8200"$/) do
+When(/^I do "vaultconf policies \-c test\/resources\/policies \-u user \-p password \-a http:\/\/localhost:8200"$/) do
   `bundle exec bin/vaultconf policies test/resources/policies -u user -p password -a http://localhost:8200 -c test/resources/policies`
+end
+
+When(/^I do "vaultconf users \-c test\/resources\/users\.yaml \-u user \-p password \-a http:\/\/localhost:8200"$/) do
+  @output = `bundle exec bin/vaultconf users -u user -p password -a http://localhost:8200 -c test/resources/users/users.yaml`
 end
 
 Then(/^I should be able to see these policies in vault$/) do
@@ -38,4 +25,43 @@ Then(/^I should be able to see these policies in vault$/) do
   readerPolicy = Vault.sys.policy('reader')
   expect(writerPolicy.rules.gsub(/\s+/, "")).to eq('{"path":{"secret/*":{"policy":"write"}}}')
   expect(readerPolicy.rules.gsub(/\s+/, "")).to eq('{"path":{"secret/*":{"policy":"read"}}}')
+end
+
+def setup_vault_server
+  @vault_server = fork do
+    exec 'vault server -dev'
+  end
+  sleep 2
+  `vault auth-enable -address=http://localhost:8200 userpass`
+  `vault write -address=http://localhost:8200 auth/userpass/users/user password=password policies=root`
+end
+
+def login_to_vault
+  address = 'http://127.0.0.1:8200'
+  Vault.address = address
+  username = 'user'
+  loginUrl = "#{address}/v1/auth/userpass/login/#{username}"
+  http = Curl.post(loginUrl, '{"password":"password"}')
+  body = JSON.parse(http.body_str)
+  Vault.token = body['auth']['client_token']
+end
+
+And(/^vault already contains policies$/) do
+  `bundle exec bin/vaultconf policies test/resources/policies -u user -p password -a http://localhost:8200 -c test/resources/policies`
+end
+
+
+Then(/^I should get a json output of the users and their generated passwords$/) do
+  jsonOutput =  JSON.parse(@output)
+  expect(jsonOutput.include?('MrWrite')).to eq(true)
+  expect(jsonOutput.include?('MrRead')).to eq(true)
+end
+
+And(/^I should be able to see the users and their associated policies in vault$/) do
+  #Get user details for MrWrite
+  MrWrite = Vault.logical.read("auth/userpass/users/MrWrite")
+  MrRead = Vault.logical.read("auth/userpass/users/MrRead")
+
+  expect(MrWrite.values[3][:policies]).to eq('writer,reader')
+  expect(MrRead.values[3][:policies]).to eq('reader')
 end

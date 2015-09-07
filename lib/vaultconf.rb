@@ -1,6 +1,8 @@
 require "vaultconf/version"
 require 'curb'
 require 'json'
+require 'yaml'
+require 'securerandom'
 
 module Vaultconf
   def self.get_auth_token(username, password, server)
@@ -20,11 +22,29 @@ module Vaultconf
       puts "#{policy_file} written to #{policy_name} policy"
     end
   end
-end
 
+  def self.add_users_to_vault(vault, users_file)
+    users = YAML.load_file(users_file)['users']
+    output ='{'
+    users.each do |user|
+      name = user['name']
+      policies = user['policies'].join(',')
+      password = Helpers.generate_password
+      vault.logical.write("auth/userpass/users/#{name}", password: password, policies: policies)
+      output = output + "\"#{name}\":\"#{password}\","
+    end
+    output = output[0...-1]+'}'
+    puts output
+  end
+
+end
 
 module Helpers
   def self.remove_file_extension(filename)
     File.basename(filename, File.extname(filename))
+  end
+
+  def self.generate_password
+    return SecureRandom.hex
   end
 end

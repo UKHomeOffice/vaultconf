@@ -9,13 +9,12 @@ class App
   include Methadone::Main
   include Methadone::CLILogging
 
-  main do # Add args you want: |like,so|
+  main do |action|
 
     server = options['a']
     user = options['u']
     password = options['p']
     config = options['c']
-
 
     # Authenticate with credentials that are passed into the program, saving the token
     authtoken = Vaultconf.get_auth_token(user, password, server)
@@ -24,7 +23,13 @@ class App
     Vault.address = server
     Vault.token = authtoken
 
-    Vaultconf.add_policies_to_vault(Vault, config)
+    if action == 'policies'
+      Vaultconf.add_policies_to_vault(Vault, config)
+    elsif action == 'users'
+      Vaultconf.add_users_to_vault(Vault, config)
+    else
+      Kernel.abort("Action must be either policies or users, you inputted #{action}")
+    end
 
     # Open the yaml file pointed to in the users argument
 
@@ -59,6 +64,7 @@ class App
   description "Updates given vault server with specified policies and users"
 
   # TODO: Need a positional argument here for what action it is that the tool will be doing
+  arg :action, "Action that you want to perform. Allowable values are \"users\" or \"policies\""
   on("-u VAL", "--user", "Specifies the user to use to create the new config in vault")
   on("-p VAL", "--password", "Specifies the password for the user who is creating the config in vault")
   on("-a VAL", "--address", "URL for the vault server")
