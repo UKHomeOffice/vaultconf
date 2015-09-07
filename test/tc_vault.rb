@@ -28,11 +28,9 @@ class TestLogin < Test::Unit::TestCase
     policies_path = File.expand_path('../resources/policies', __FILE__)
 
     reader_policy_stub = stub_request(:put, "http://#{@@server}/v1/sys/policy/reader").
-        with(:body => "{\"rules\":\"{\\n  \\\"path\\\": {\\n    \\\"secret/*\\\": {\\n      \\\"policy\\\": \\\"read\\\"\\n    }\\n  }\\n}\"}").
         to_return(:status => 200, :body => "", :headers => {})
 
     writer_policy_stub = stub_request(:put, "http://#{@@server}/v1/sys/policy/writer").
-        with(:body => "{\"rules\":\"{\\n  \\\"path\\\": {\\n    \\\"secret/*\\\": {\\n      \\\"policy\\\": \\\"write\\\"\\n    }\\n  }\\n}\"}").
         to_return(:status => 200, :body => "", :headers => {})
 
     Vaultconf.add_policies_to_vault(Vault, policies_path)
