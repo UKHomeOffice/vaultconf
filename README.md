@@ -1,5 +1,5 @@
 # Vaultconf
-A command line tool to allow use of a yaml VPN configuration file to push this config to Skyscape
+A command line tool to allow update of policies and users in Vault - https://vaultproject.io/
 
 ## Installation
 Add this line to your application's Gemfile:
