@@ -1,4 +1,4 @@
-# Vpnconfig
+# Vaultconf
 A command line tool to allow use of a yaml VPN configuration file to push this config to Skyscape
 
 ## Installation
