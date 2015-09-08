@@ -28,7 +28,7 @@ vaultconf policies -c test/resources/policies -u user -p password -a http://loca
 ```
 And to add users with associated policies to your vault server:
 ```bash
-vaultconf users -c test/resources/users.yaml -u user -p password -a http://localhost:8200
+vaultconf users -c test/resources/users/users.yaml -u user -p password -a http://localhost:8200
 ```
 
 Example command line if you have cloned the repository without installing as a gem:
