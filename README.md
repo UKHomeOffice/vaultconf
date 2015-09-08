@@ -32,8 +32,9 @@ vaultconf users -c test/resources/users/users.yaml -u user -p password -a http:/
 ```
 
 Example command line if you have cloned the repository without installing as a gem:
+```bash
 bundle exec ./bin/vaultconf policies -c test/resources/policies -u user -p password -a http://localhost:8200
-
+```
 Example policies directory structure is provided in test/resources/policies.
 Example users yaml structure is provided in test/resources/users/users/yaml
 
