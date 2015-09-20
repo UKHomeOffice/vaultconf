@@ -25,12 +25,12 @@ class TestLogin < Test::Unit::TestCase
   end
 
   def test_add_policies_to_vault
-    policies_path = File.expand_path('../resources/policies', __FILE__)
+    policies_path = File.expand_path('../resources/simple_policies', __FILE__)
 
-    reader_policy_stub = stub_request(:put, "http://#{@@server}/v1/sys/policy/reader").
+    reader_policy_stub = stub_request(:put, "http://#{@@server}/v1/sys/policy/dev-myproject/reader").
         to_return(:status => 200, :body => "", :headers => {})
 
-    writer_policy_stub = stub_request(:put, "http://#{@@server}/v1/sys/policy/writer").
+    writer_policy_stub = stub_request(:put, "http://#{@@server}/v1/sys/policy/dev-myproject/writer").
         to_return(:status => 200, :body => "", :headers => {})
 
     Vaultconf.add_policies_to_vault(Vault, policies_path)

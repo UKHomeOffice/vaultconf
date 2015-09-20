@@ -19,10 +19,13 @@ end
 
 Then(/^I should be able to see these policies in vault$/) do
   policies = Vault.sys.policies
-  expect(policies.include?('writer')).to eq(true)
-  expect(policies.include?('reader')).to eq(true)
-  writerPolicy = Vault.sys.policy('writer')
-  readerPolicy = Vault.sys.policy('reader')
+  expect(policies.include?('dev-myproject/writer')).to eq(true)
+  expect(policies.include?('dev-myproject/reader')).to eq(true)
+  expect(policies.include?('uat-myproject/reader')).to eq(true)
+  expect(policies.include?('uat-myproject/reader')).to eq(true)
+  expect(policies.include?('uat-anotherproject/apolicy')).to eq(true)
+  writerPolicy = Vault.sys.policy('dev-myproject/writer')
+  readerPolicy = Vault.sys.policy('dev-myproject/reader')
   expect(writerPolicy.rules.gsub(/\s+/, "")).to eq('{"path":{"secret/*":{"policy":"write"}}}')
   expect(readerPolicy.rules.gsub(/\s+/, "")).to eq('{"path":{"secret/*":{"policy":"read"}}}')
 end

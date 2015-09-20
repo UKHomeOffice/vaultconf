@@ -13,13 +13,16 @@ module Vaultconf
     return token
   end
 
-  def self.add_policies_to_vault(vault, policy_dir)
-    Dir.foreach(policy_dir) do |policy_file|
-      next if policy_file == '.' or policy_file == '..'
-      policy_name = Helpers.remove_file_extension(policy_file)
-      policy_raw = File.read(policy_dir + '/' + policy_file)
-      vault.sys.put_policy(policy_name, policy_raw)
-      puts "#{policy_file} written to #{policy_name} policy"
+  def self.add_policies_to_vault(vault, policy_namespace_dir)
+    Dir.foreach(policy_namespace_dir) do |policy_dir|
+      next if policy_dir == '.' or policy_dir == '..'
+      Dir.foreach(policy_namespace_dir + '/' + policy_dir) do |policy_file|
+        next if policy_file == '.' or policy_file == '..'
+        policy_name = Helpers.remove_file_extension(policy_file)
+        policy_raw = File.read(policy_namespace_dir + '/' + policy_dir + '/' + policy_file)
+        vault.sys.put_policy(policy_dir + '/' + policy_name, policy_raw)
+        puts "#{policy_dir} written to #{policy_name} policy"
+      end
     end
   end
 
