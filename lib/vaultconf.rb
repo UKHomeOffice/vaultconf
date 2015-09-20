@@ -14,27 +14,30 @@ module Vaultconf
   end
 
   def self.add_policies_to_vault(vault, policy_namespace_dir)
-    Dir.foreach(policy_namespace_dir) do |policy_dir|
-      next if policy_dir == '.' or policy_dir == '..'
-      Dir.foreach(policy_namespace_dir + '/' + policy_dir) do |policy_file|
+    Dir.foreach(policy_namespace_dir) do |namespace|
+      next if namespace == '.' or namespace == '..'
+      Dir.foreach(policy_namespace_dir + '/' + namespace) do |policy_file|
         next if policy_file == '.' or policy_file == '..'
         policy_name = Helpers.remove_file_extension(policy_file)
-        policy_raw = File.read(policy_namespace_dir + '/' + policy_dir + '/' + policy_file)
-        vault.sys.put_policy(policy_dir + '/' + policy_name, policy_raw)
-        puts "#{policy_dir} written to #{policy_name} policy"
+        policy_raw = File.read(policy_namespace_dir + '/' + namespace + '/' + policy_file)
+        vault.sys.put_policy(namespace + '_' + policy_name, policy_raw)
+        puts "#{namespace} written to #{policy_name} policy"
       end
     end
   end
 
   def self.add_users_to_vault(vault, users_file)
-    users = YAML.load_file(users_file)['users']
+    namespaces = YAML.load_file(users_file)
     output ='{'
-    users.each do |user|
-      name = user['name']
-      policies = user['policies'].join(',')
-      password = Helpers.generate_password
-      vault.logical.write("auth/userpass/users/#{name}", password: password, policies: policies)
-      output = output + "\"#{name}\":\"#{password}\","
+    namespaces.each do |namespace|
+      users = namespace[1]
+      users.each do |user|
+        name = user['name']
+        policies = user['policies'].join(',')
+        password = Helpers.generate_password
+        vault.logical.write("auth/userpass/users/#{namespace[0]}_#{name}", password: password, policies: policies)
+        output = output + "\"#{namespace[0]}_#{name}\":\"#{password}\","
+      end
     end
     output = output[0...-1]+'}'
     puts output

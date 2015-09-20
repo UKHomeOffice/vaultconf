@@ -19,13 +19,13 @@ end
 
 Then(/^I should be able to see these policies in vault$/) do
   policies = Vault.sys.policies
-  expect(policies.include?('dev-myproject/writer')).to eq(true)
-  expect(policies.include?('dev-myproject/reader')).to eq(true)
-  expect(policies.include?('uat-myproject/reader')).to eq(true)
-  expect(policies.include?('uat-myproject/reader')).to eq(true)
-  expect(policies.include?('uat-anotherproject/apolicy')).to eq(true)
-  writerPolicy = Vault.sys.policy('dev-myproject/writer')
-  readerPolicy = Vault.sys.policy('dev-myproject/reader')
+  expect(policies.include?('dev_myproject_writer')).to eq(true)
+  expect(policies.include?('dev_myproject_reader')).to eq(true)
+  expect(policies.include?('uat_myproject_reader')).to eq(true)
+  expect(policies.include?('uat_myproject_reader')).to eq(true)
+  expect(policies.include?('uat_anotherproject_apolicy')).to eq(true)
+  writerPolicy = Vault.sys.policy('dev_myproject_writer')
+  readerPolicy = Vault.sys.policy('dev_myproject_reader')
   expect(writerPolicy.rules.gsub(/\s+/, "")).to eq('{"path":{"secret/*":{"policy":"write"}}}')
   expect(readerPolicy.rules.gsub(/\s+/, "")).to eq('{"path":{"secret/*":{"policy":"read"}}}')
 end
@@ -56,15 +56,20 @@ end
 
 Then(/^I should get a json output of the users and their generated passwords$/) do
   jsonOutput =  JSON.parse(@output)
-  expect(jsonOutput.include?('MrWrite')).to eq(true)
-  expect(jsonOutput.include?('MrRead')).to eq(true)
+  expect(jsonOutput.include?('dev_myproject_MrWrite')).to eq(true)
+  expect(jsonOutput.include?('dev_myproject_MrRead')).to eq(true)
+  expect(jsonOutput.include?('uat_myproject_MrRead')).to eq(true)
+  expect(jsonOutput.include?('uat_myproject_MrRead')).to eq(true)
+  expect(jsonOutput.include?('uat_anotherproject_AnotherUser')).to eq(true)
 end
 
 And(/^I should be able to see the users and their associated policies in vault$/) do
   #Get user details for MrWrite
-  MrWrite = Vault.logical.read("auth/userpass/users/MrWrite")
-  MrRead = Vault.logical.read("auth/userpass/users/MrRead")
+  MrWrite = Vault.logical.read("auth/userpass/users/dev_myproject_MrWrite")
+  MrRead = Vault.logical.read("auth/userpass/users/dev_myproject_MrRead")
+  AnotherUser = Vault.logical.read("auth/userpass/users/uat_anotherproject_AnotherUser")
 
   expect(MrWrite.values[3][:policies]).to eq('writer,reader')
   expect(MrRead.values[3][:policies]).to eq('reader')
+  expect(AnotherUser.values[3][:policies]).to eq('apolicy')
 end

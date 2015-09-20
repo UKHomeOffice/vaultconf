@@ -1,5 +1,5 @@
 ---
-  users:
+  dev_myproject:
     - name: MrWrite
       policies:
         - writer
@@ -7,3 +7,15 @@
     - name: MrRead
       policies:
         - reader
+  uat_myproject:
+    - name: MrWrite
+      policies:
+        - writer
+        - reader
+    - name: MrRead
+      policies:
+        - reader
+  uat_anotherproject:
+    - name: AnotherUser
+      policies:
+        - apolicy

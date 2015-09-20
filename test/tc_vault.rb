@@ -27,10 +27,10 @@ class TestLogin < Test::Unit::TestCase
   def test_add_policies_to_vault
     policies_path = File.expand_path('../resources/simple_policies', __FILE__)
 
-    reader_policy_stub = stub_request(:put, "http://#{@@server}/v1/sys/policy/dev-myproject/reader").
+    reader_policy_stub = stub_request(:put, "http://#{@@server}/v1/sys/policy/dev_myproject_reader").
         to_return(:status => 200, :body => "", :headers => {})
 
-    writer_policy_stub = stub_request(:put, "http://#{@@server}/v1/sys/policy/dev-myproject/writer").
+    writer_policy_stub = stub_request(:put, "http://#{@@server}/v1/sys/policy/dev_myproject_writer").
         to_return(:status => 200, :body => "", :headers => {})
 
     Vaultconf.add_policies_to_vault(Vault, policies_path)
@@ -41,13 +41,13 @@ class TestLogin < Test::Unit::TestCase
   end
 
   def test_add_users_to_vault
-    users_path = File.expand_path('../resources/users/users.yaml', __FILE__)
+    users_path = File.expand_path('../resources/simple_users/users.yaml', __FILE__)
 
-    user_request_stub_writer = stub_request(:put, "http://#{@@server}/v1/auth/userpass/users/MrWrite").
+    user_request_stub_writer = stub_request(:put, "http://#{@@server}/v1/auth/userpass/users/dev_myproject_MrWrite").
         with(:body => /{\"password\":\".*\",\"policies\":\"writer,reader\"}/).
         to_return(:status => 200, :body => "", :headers => {})
 
-    user_request_stub_reader = stub_request(:put, "http://#{@@server}/v1/auth/userpass/users/MrRead").
+    user_request_stub_reader = stub_request(:put, "http://#{@@server}/v1/auth/userpass/users/dev_myproject_MrRead").
         with(:body => /{\"password\":\".*\",\"policies\":\"reader\"}/).
         to_return(:status => 200, :body => "", :headers => {})
 

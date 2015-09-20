@@ -1,0 +1,9 @@
+---
+  dev_myproject:
+    - name: MrWrite
+      policies:
+        - writer
+        - reader
+    - name: MrRead
+      policies:
+        - reader
