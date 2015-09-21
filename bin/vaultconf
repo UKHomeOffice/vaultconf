@@ -3,6 +3,7 @@
 require 'optparse'
 require 'methadone'
 require 'vaultconf.rb'
+require 'kubernetes.rb'
 require 'vault'
 
 class App
@@ -26,7 +27,8 @@ class App
     if action == 'policies'
       Vaultconf.add_policies_to_vault(Vault, config)
     elsif action == 'users'
-      Vaultconf.add_users_to_vault(Vault, config)
+      logins = Vaultconf.add_users_to_vault(Vault, config)
+      Kubernetes.add_logins_to_kubernetes(logins)
     else
       Kernel.abort("Action must be either policies or users, you inputted #{action}")
     end

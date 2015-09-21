@@ -1,0 +1,33 @@
+require 'test/unit'
+require 'webmock/test_unit'
+require 'vault'
+require 'kubernetes'
+require 'yaml'
+
+class TestKubernetes < Test::Unit::TestCase
+  def test_create_secret_yaml
+    username = 'testUser'
+    password = 'testPassword'
+    generated_yaml = Kubernetes.create_secret_yaml(username + '_vault', username, password)
+    expected_yaml = {'apiVersion' => 'v1',
+                     'kind' => 'Secret',
+                     'metadata' => {
+                         'name' => 'testUser_vault'
+                     },
+                     'data' => {
+                         'username' => 'dGVzdFVzZXI=',
+                         'password' => 'dGVzdFBhc3N3b3Jk'
+                     }
+    }.to_yaml
+
+    # TODO: Figure out why the 2 versions aren't the same without removing misc chars
+    assert_equal(remove_misc_chars(expected_yaml), remove_misc_chars(generated_yaml))
+  end
+
+  def remove_misc_chars(str)
+    str.gsub!(/\n/, '')
+    str.gsub!(' ', '')
+    str.gsub!('|', '')
+    return str
+  end
+end

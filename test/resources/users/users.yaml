@@ -1,21 +1,21 @@
 ---
   dev_myproject:
-    - name: MrWrite
+    - name: mrwrite
       policies:
         - writer
         - reader
-    - name: MrRead
+    - name: mrread
       policies:
         - reader
   uat_myproject:
-    - name: MrWrite
+    - name: mrwrite
       policies:
         - writer
         - reader
-    - name: MrRead
+    - name: mrread
       policies:
         - reader
   uat_anotherproject:
-    - name: AnotherUser
+    - name: anotheruser
       policies:
         - apolicy

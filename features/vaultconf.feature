@@ -8,6 +8,7 @@ Feature: vaultconf can add users with policies to a vault server
   Scenario: vaultconf can add users to vault
     Given I have a vault server running
     And vault already contains policies
-    When I do "vaultconf users -c test/resources/users.yaml -u user -p password -a http://localhost:8200"
-    Then I should get a json output of the users and their generated passwords
+    When I do "vaultconf users -c test/resources/users/users.yaml -u user -p password -a http://localhost:8200"
+#    TODO: Figure out best way to mock kubernetes service so we can confirm secrets are being written
+#    Then the usernames and passwords should be added to kubernetes secrets
     And I should be able to see the users and their associated policies in vault

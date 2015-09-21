@@ -2,7 +2,7 @@ require "vaultconf/version"
 require 'curb'
 require 'json'
 require 'yaml'
-require 'securerandom'
+require 'helpers'
 
 module Vaultconf
   def self.get_auth_token(username, password, server)
@@ -29,6 +29,7 @@ module Vaultconf
   def self.add_users_to_vault(vault, users_file)
     namespaces = YAML.load_file(users_file)
     output ='{'
+    logins = Array.new
     namespaces.each do |namespace|
       users = namespace[1]
       users.each do |user|
@@ -36,21 +37,11 @@ module Vaultconf
         policies = user['policies'].join(',')
         password = Helpers.generate_password
         vault.logical.write("auth/userpass/users/#{namespace[0]}_#{name}", password: password, policies: policies)
-        output = output + "\"#{namespace[0]}_#{name}\":\"#{password}\","
+        login = {:namespace => namespace[0], :username => name, :password => password}
+        logins.push(login)
       end
     end
-    output = output[0...-1]+'}'
-    puts output
+    return logins
   end
 
-end
-
-module Helpers
-  def self.remove_file_extension(filename)
-    File.basename(filename, File.extname(filename))
-  end
-
-  def self.generate_password
-    return SecureRandom.hex
-  end
 end

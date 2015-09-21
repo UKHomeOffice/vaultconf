@@ -13,7 +13,7 @@ When(/^I do "vaultconf policies \-c test\/resources\/policies \-u user \-p passw
   `bundle exec bin/vaultconf policies test/resources/policies -u user -p password -a http://localhost:8200 -c test/resources/policies`
 end
 
-When(/^I do "vaultconf users \-c test\/resources\/users\.yaml \-u user \-p password \-a http:\/\/localhost:8200"$/) do
+When(/^I do "vaultconf users \-c test\/resources\/users\/users\.yaml \-u user \-p password \-a http:\/\/localhost:8200"$/) do
   @output = `bundle exec bin/vaultconf users -u user -p password -a http://localhost:8200 -c test/resources/users/users.yaml`
 end
 

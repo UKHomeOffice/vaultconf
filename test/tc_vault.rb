@@ -3,7 +3,7 @@ require 'webmock/test_unit'
 require 'vaultconf.rb'
 require 'vault'
 
-class TestLogin < Test::Unit::TestCase
+class TestVault < Test::Unit::TestCase
   @@server = 'localhost:8200'
   @@user = 'mike'
   @@password = 'xdf32'
@@ -21,7 +21,7 @@ class TestLogin < Test::Unit::TestCase
 
     auth_token = Vaultconf.get_auth_token(@@user, @@password, @@server)
 
-    assert auth_token = expected_auth_token
+    assert auth_token == expected_auth_token
   end
 
   def test_add_policies_to_vault
