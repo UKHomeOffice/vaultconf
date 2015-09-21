@@ -1,7 +1,7 @@
 require 'securerandom'
 
 module Helpers
-  def self.remove_file_extension(filename)
+  def self.get_policy_name_from_path(filename)
     File.basename(filename, File.extname(filename))
   end
 

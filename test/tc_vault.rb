@@ -24,8 +24,18 @@ class TestVault < Test::Unit::TestCase
     assert auth_token == expected_auth_token
   end
 
-  def test_add_policies_to_vault
+  def test_reconcile_policies_to_vault
+    # Given configuration containing new policies
     policies_path = File.expand_path('../resources/simple_policies', __FILE__)
+    old_policy_name = 'old_policy'
+
+    # And that there are 2 existing policies - root, and an old policy that should be deleted
+    read_all_policies_stub = stub_request(:get, "http://#{@@server}/v1/sys/policy").
+        to_return(:status => 200, :body => "{\"policies\":[\"#{old_policy_name}\",\"root\"]} ", :headers => {'content_type' => 'application/json'})
+
+    delete_policy_stub = stub_request(:delete, "http://#{@@server}/#{old_policy_name}").
+    to_return(:status => 200, :body => "", :headers => {})
+
 
     reader_policy_stub = stub_request(:put, "http://#{@@server}/v1/sys/policy/dev_myproject_reader").
         to_return(:status => 200, :body => "", :headers => {})
@@ -33,11 +43,15 @@ class TestVault < Test::Unit::TestCase
     writer_policy_stub = stub_request(:put, "http://#{@@server}/v1/sys/policy/dev_myproject_writer").
         to_return(:status => 200, :body => "", :headers => {})
 
-    Vaultconf.add_policies_to_vault(Vault, policies_path)
+    # When I reconcile policies to vault
+    Vaultconf.reconcile_policies_to_vault(Vault, policies_path)
 
+    # Then the new policies should be added
     assert_requested(writer_policy_stub)
     assert_requested(reader_policy_stub)
 
+    # And the old policy should be deleted
+    assert_requested(delete_policy_stub)
   end
 
   def test_add_users_to_vault

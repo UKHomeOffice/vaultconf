@@ -25,7 +25,7 @@ class App
     Vault.token = authtoken
 
     if action == 'policies'
-      Vaultconf.add_policies_to_vault(Vault, config)
+      Vaultconf.reconcile_policies_to_vault(Vault, config)
     elsif action == 'users'
       logins = Vaultconf.add_users_to_vault(Vault, config)
       Kubernetes.add_logins_to_kubernetes(logins)

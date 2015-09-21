@@ -13,16 +13,33 @@ module Vaultconf
     return token
   end
 
-  def self.add_policies_to_vault(vault, policy_namespace_dir)
+  def self.reconcile_policies_to_vault(vault, policy_namespace_dir)
     Dir.foreach(policy_namespace_dir) do |namespace|
       next if namespace == '.' or namespace == '..'
-      Dir.foreach(policy_namespace_dir + '/' + namespace) do |policy_file|
-        next if policy_file == '.' or policy_file == '..'
-        policy_name = Helpers.remove_file_extension(policy_file)
-        policy_raw = File.read(policy_namespace_dir + '/' + namespace + '/' + policy_file)
-        vault.sys.put_policy(namespace + '_' + policy_name, policy_raw)
-        puts "#{namespace} written to #{policy_name} policy"
+      policy_file_names = Dir[policy_namespace_dir + '/' + namespace + '/*'].select { |filename| filename != '.' && filename != '..' }
+      policy_names = policy_file_names.map { |p| namespace + '_' + Helpers.get_policy_name_from_path(p) }
+
+
+      Vaultconf.add_policies(vault, policy_file_names, namespace)
+      Vaultconf.delete_old_policies(vault, policy_names)
+    end
+  end
+
+  def self.delete_old_policies(vault, new_policies)
+    existing_policies = vault.sys.policies
+    existing_policies.each do |existing_policy|
+      unless new_policies.include?(existing_policy) || existing_policy == 'root'
+        vault.delete(existing_policy)
       end
+    end
+  end
+
+  def self.add_policies(vault, policy_file_names, namespace)
+    policy_file_names.each do |policy_file_name|
+      policy_name = Helpers.get_policy_name_from_path(policy_file_name)
+      policy_raw = File.read(policy_file_name)
+      vault.sys.put_policy(namespace + '_' + policy_name, policy_raw)
+      puts "#{namespace} written to #{policy_name} policy"
     end
   end
 

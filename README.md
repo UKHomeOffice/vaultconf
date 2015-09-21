@@ -1,5 +1,7 @@
 # Vaultconf
-A command line tool to allow update of policies and users in Vault - https://vaultproject.io/
+A command line tool to allow mass configuration updates in vault with support included for kubernetes. Functions include:
+- update of policies in vault
+- update of users in Vault
 
 ## Installation
 Add this line to your application's Gemfile:
@@ -22,19 +24,7 @@ require 'vaultconf'
 ## Usage
 Run with option --help to show command line help.
 
-Example command line with gem installed, to add policies to your vault server:
-```bash
-vaultconf policies -c test/resources/policies -u user -p password -a http://localhost:8200
-```
-And to add users with associated policies to your vault server:
-```bash
-vaultconf users -c test/resources/users/users.yaml -u user -p password -a http://localhost:8200
-```
-
-Example command line if you have cloned the repository without installing as a gem:
-```bash
-bundle exec ./bin/vaultconf policies -c test/resources/policies -u user -p password -a http://localhost:8200
-```
+Example usage is included in vaultconf.feature. Please note if the gem isn't installed you will need to run using bundle exec bin/vaultconf ....etc
 Example policies directory structure is provided in test/resources/policies.
 Example users yaml structure is provided in test/resources/users/users/yaml
 
