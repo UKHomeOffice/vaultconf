@@ -16,21 +16,26 @@ class App
     user = options['u']
     password = options['p']
     config = options['c']
+    configure_kubernetes = options['nokube']
 
     # Authenticate with credentials that are passed into the program, saving the token
-    authtoken = Vaultconf.get_auth_token(user, password, server)
+    authtoken = Vaultconf::Vaultconf.get_auth_token(user, password, server)
 
     # Setup Vault singleton
     Vault.address = server
     Vault.token = authtoken
 
+    kube_service = Kubernetes::KubernetesService.new
+    vault = Vaultconf::Vaultconf.new(Vault, kube_service)
+    kube_controller = Kubernetes::KubernetesController.new(kube_service)
+
     if action == 'policies'
-      Vaultconf.reconcile_policies_to_vault(Vault, config)
+      vault.reconcile_policies_to_vault(config)
     elsif action == 'users'
-      logins = Vaultconf.add_users_to_vault(Vault, config)
-      Kubernetes.add_logins_to_kubernetes(logins)
+      logins = vault.reconcile_users_to_vault(config, configure_kubernetes)
+      if configure_kubernetes then kube_controller.add_logins_to_kubernetes(logins) end
     else
-      Kernel.abort("Action must be either policies or users, you inputted #{action}")
+        Kernel.abort("Action must be either policies or users, you inputted #{action}")
     end
 
     # Open the yaml file pointed to in the users argument
@@ -70,6 +75,7 @@ class App
   on("-u VAL", "--user", "Specifies the user to use to create the new config in vault")
   on("-p VAL", "--password", "Specifies the password for the user who is creating the config in vault")
   on("-a VAL", "--address", "URL for the vault server")
+  on("--nokube", "Configure only Vault, don't touch kubernetes")
   on("-c VAL", "--config", "Specifies either the directory containing vault policies to be added, or the file containing users to be added")
   on("-v", "--verbose", "Verbose logging")
 

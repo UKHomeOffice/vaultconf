@@ -5,60 +5,92 @@ require 'yaml'
 require 'helpers'
 
 module Vaultconf
-  def self.get_auth_token(username, password, server)
-    url = "#{server}/v1/auth/userpass/login/#{username}"
-    http = Curl.post(url, '{"password":"' + password + '"}')
-    body = JSON.parse(http.body_str)
-    token = body['auth']['client_token']
-    return token
-  end
+  class Vaultconf
 
-  def self.reconcile_policies_to_vault(vault, policy_namespace_dir)
-    Dir.foreach(policy_namespace_dir) do |namespace|
-      next if namespace == '.' or namespace == '..'
-      policy_file_names = Dir[policy_namespace_dir + '/' + namespace + '/*'].select { |filename| filename != '.' && filename != '..' }
-      policy_names = policy_file_names.map { |p| namespace + '_' + Helpers.get_policy_name_from_path(p) }
-
-
-      Vaultconf.add_policies(vault, policy_file_names, namespace)
-      Vaultconf.delete_old_policies(vault, policy_names)
+    def initialize(vault, kube_service)
+      @vault=vault
+      @kube_service=kube_service
     end
-  end
 
-  def self.delete_old_policies(vault, new_policies)
-    existing_policies = vault.sys.policies
-    existing_policies.each do |existing_policy|
-      unless new_policies.include?(existing_policy) || existing_policy == 'root'
-        vault.delete(existing_policy)
+    def self.get_auth_token(username, password, server)
+      url = "#{server}/v1/auth/userpass/login/#{username}"
+      http = Curl.post(url, '{"password":"' + password + '"}')
+      body = JSON.parse(http.body_str)
+      token = body['auth']['client_token']
+      return token
+    end
+
+    def reconcile_policies_to_vault(policy_namespace_dir)
+      policy_file_names = Array.new
+      policy_names = Array.new
+      Dir.foreach(policy_namespace_dir) do |namespace|
+        next if namespace == '.' or namespace == '..'
+        new_policy_file_names = Dir[policy_namespace_dir + '/' + namespace + '/*'].select { |filename| filename != '.' && filename != '..' }
+        policy_file_names =policy_file_names.concat(new_policy_file_names)
+        policy_names = policy_names.concat(new_policy_file_names.map { |p| namespace + '_' + Helpers.get_policy_name_from_path(p) })
+      end
+      policies = policy_file_names.zip(policy_names)
+      delete_old_policies(@vault, policy_names)
+      add_policies(@vault, policies)
+    end
+
+    def delete_old_policies(vault, new_policies)
+      existing_policies = @vault.sys.policies
+      existing_policies.each do |existing_policy|
+        unless new_policies.include?(existing_policy) || existing_policy == 'root'
+          @vault.delete(existing_policy)
+        end
       end
     end
-  end
 
-  def self.add_policies(vault, policy_file_names, namespace)
-    policy_file_names.each do |policy_file_name|
-      policy_name = Helpers.get_policy_name_from_path(policy_file_name)
-      policy_raw = File.read(policy_file_name)
-      vault.sys.put_policy(namespace + '_' + policy_name, policy_raw)
-      puts "#{namespace} written to #{policy_name} policy"
-    end
-  end
-
-  def self.add_users_to_vault(vault, users_file)
-    namespaces = YAML.load_file(users_file)
-    output ='{'
-    logins = Array.new
-    namespaces.each do |namespace|
-      users = namespace[1]
-      users.each do |user|
-        name = user['name']
-        policies = user['policies'].join(',')
-        password = Helpers.generate_password
-        vault.logical.write("auth/userpass/users/#{namespace[0]}_#{name}", password: password, policies: policies)
-        login = {:namespace => namespace[0], :username => name, :password => password}
-        logins.push(login)
+    def add_policies(vault, policies)
+      policies.each do |policy|
+        policy_name = policy[1]
+        policy_file_name = policy[0]
+        policy_raw = File.read(policy_file_name)
+        @vault.sys.put_policy(policy_name, policy_raw)
+        puts "#{policy_name} policy written to vault"
       end
     end
-    return logins
-  end
 
+    def reconcile_users_to_vault(users_file, configure_kubernetes)
+      namespaces = YAML.load_file(users_file)
+      output ='{'
+      logins = Array.new
+      namespaces.each do |namespace|
+        users_to_add = namespace[1]
+        namespace_name = namespace[0]
+        if configure_kubernetes then
+          remove_old_users(users_to_add, namespace_name, @vault) # No way to list users in vault so can do this only with kubernetes
+          users_to_add.each do |user|
+            login = self.add_user_to_vault(user, namespace_name)
+            logins.push(login)
+          end
+        end
+      end
+      return logins
+    end
+
+    def remove_old_users(new_users, namespace, vault)
+      # Find current users via kubernetes secrets, as vault has no ability to list users
+      new_user_names = new_users.map { |new_user| new_user['name'] }
+      current_users = @kube_service.get_user_secrets(namespace)
+      # Filter out users that are in kubernetes
+      users_to_delete = current_users.reject { |current_user| new_users.include?(current_user) }
+      users_to_delete.each do |user_to_delete|
+        @kube_service.delete_secret("#{user_to_delete}-vault", namespace)
+        user_to_delete_vault = user_to_delete.gsub("-", "_")
+        @vault.logical.delete("auth/userpass/users/#{user_to_delete_vault}")
+      end
+    end
+
+    def add_user_to_vault(user, namespace)
+      name = user['name']
+      policies = user['policies'].join(',')
+      password = Helpers.generate_password
+      @vault.logical.write("auth/userpass/users/#{namespace}_#{name}", password: password, policies: policies)
+      login = {:namespace => namespace, :username => name, :password => password}
+      return login
+    end
+  end
 end

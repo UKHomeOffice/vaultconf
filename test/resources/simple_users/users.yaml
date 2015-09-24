@@ -1,5 +1,5 @@
 ---
-  dev_myproject:
+  dev:
     - name: MrWrite
       policies:
         - writer

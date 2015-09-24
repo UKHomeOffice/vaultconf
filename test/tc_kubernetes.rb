@@ -3,12 +3,15 @@ require 'webmock/test_unit'
 require 'vault'
 require 'kubernetes'
 require 'yaml'
+require 'mocha/test_unit'
 
 class TestKubernetes < Test::Unit::TestCase
   def test_create_secret_yaml
     username = 'testUser'
     password = 'testPassword'
-    generated_yaml = Kubernetes.create_secret_yaml(username + '_vault', username, password)
+    kube_service = mock
+    kube_controller = Kubernetes::KubernetesController.new(kube_service)
+    generated_yaml = kube_controller.create_secret_yaml(username + '_vault', username, password)
     expected_yaml = {'apiVersion' => 'v1',
                      'kind' => 'Secret',
                      'metadata' => {

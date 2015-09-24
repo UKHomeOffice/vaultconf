@@ -2,19 +2,18 @@ require 'curb'
 require 'vault'
 require 'json'
 
-
 Given(/^I have a vault server running$/) do
   setup_vault_server
   login_to_vault
 end
 
 
-When(/^I do "vaultconf policies \-c test\/resources\/policies \-u user \-p password \-a http:\/\/localhost:8200"$/) do
-  `bundle exec bin/vaultconf policies test/resources/policies -u user -p password -a http://localhost:8200 -c test/resources/policies`
+When(/^I do "vaultconf policies \-c test\/resources\/policies \-u user \-p password \-a http:\/\/localhost:8200 --nokube"$/) do
+  `bundle exec bin/vaultconf policies test/resources/policies -u user -p password -a http://localhost:8200 -c test/resources/policies --nokube`
 end
 
-When(/^I do "vaultconf users \-c test\/resources\/users\/users\.yaml \-u user \-p password \-a http:\/\/localhost:8200"$/) do
-  @output = `bundle exec bin/vaultconf users -u user -p password -a http://localhost:8200 -c test/resources/users/users.yaml`
+When(/^I do "vaultconf users \-c test\/resources\/users\/users\.yaml \-u user \-p password \-a http:\/\/localhost:8200 --nokube"$/) do
+  @output = `bundle exec bin/vaultconf users -u user -p password -a http://localhost:8200 -c test/resources/users/users.yaml --nokube`
 end
 
 Then(/^I should be able to see these policies in vault$/) do
@@ -64,7 +63,6 @@ Then(/^I should get a json output of the users and their generated passwords$/) 
 end
 
 And(/^I should be able to see the users and their associated policies in vault$/) do
-  #Get user details for MrWrite
   MrWrite = Vault.logical.read("auth/userpass/users/dev_myproject_MrWrite")
   MrRead = Vault.logical.read("auth/userpass/users/dev_myproject_MrRead")
   AnotherUser = Vault.logical.read("auth/userpass/users/uat_anotherproject_AnotherUser")
