@@ -16,7 +16,7 @@ class App
     user = options['u']
     password = options['p']
     config = options['c']
-    configure_kubernetes = options['nokube']
+    configure_kubernetes = !options['nokube']
 
     # Authenticate with credentials that are passed into the program, saving the token
     authtoken = Vaultconf::Vaultconf.get_auth_token(user, password, server)

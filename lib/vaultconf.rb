@@ -3,10 +3,12 @@ require 'curb'
 require 'json'
 require 'yaml'
 require 'helpers'
+require 'methadone'
 
 module Vaultconf
   class Vaultconf
-
+    include Methadone::Main
+    include Methadone::CLILogging
     def initialize(vault, kube_service)
       @vault=vault
       @kube_service=kube_service
@@ -44,26 +46,29 @@ module Vaultconf
     end
 
     def add_policies(vault, policies)
+      info "Adding policies to vault"
       policies.each do |policy|
         policy_name = policy[1]
         policy_file_name = policy[0]
         policy_raw = File.read(policy_file_name)
         @vault.sys.put_policy(policy_name, policy_raw)
-        puts "#{policy_name} policy written to vault"
+        debug "#{policy_name} policy written to vault"
       end
     end
 
     def reconcile_users_to_vault(users_file, configure_kubernetes)
+      info "Adding users to vault"
       namespaces = YAML.load_file(users_file)
       output ='{'
       logins = Array.new
       namespaces.each do |namespace|
         users_to_add = namespace[1]
         namespace_name = namespace[0]
-        if configure_kubernetes then
+        if configure_kubernetes
+          debug "Looking for historic users to remove for namespace #{namespace_name}"
           remove_old_users(users_to_add, namespace_name, @vault) # No way to list users in vault so can do this only with kubernetes
           users_to_add.each do |user|
-            login = self.add_user_to_vault(user, namespace_name)
+            login = add_user_to_vault(user, namespace_name)
             logins.push(login)
           end
         end
@@ -88,6 +93,7 @@ module Vaultconf
       name = user['name']
       policies = user['policies'].join(',')
       password = Helpers.generate_password
+      debug "Writing user #{namespace}_#{name} to vault"
       @vault.logical.write("auth/userpass/users/#{namespace}_#{name}", password: password, policies: policies)
       login = {:namespace => namespace, :username => name, :password => password}
       return login
