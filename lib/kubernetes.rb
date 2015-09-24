@@ -30,8 +30,7 @@ module Kubernetes
                          'name' => secret_name
                      },
                      'data' => {
-                         'username' => Base64.encode64(username),
-                         'password' => Base64.encode64(password)
+                         'login' => Base64.encode64("{username:#{username},password:#{password}}"),
                      }
       }.to_yaml
 
