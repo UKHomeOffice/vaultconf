@@ -14,6 +14,11 @@ module Vaultconf
       @kube_service=kube_service
     end
 
+    def self.read_login_from_file
+      login_yaml = YAML.load_file("#{Dir.home}/.vaultconf/login")
+      return login_yaml['username'], login_yaml['password']
+    end
+
     def self.get_auth_token(username, password, server)
       url = "#{server}/v1/auth/userpass/login/#{username}"
       http = Curl.post(url, '{"password":"' + password + '"}')
@@ -98,5 +103,6 @@ module Vaultconf
       login = {:namespace => namespace, :username => name, :password => password}
       return login
     end
+
   end
 end

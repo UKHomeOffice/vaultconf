@@ -3,6 +3,7 @@ require 'webmock/test_unit'
 require 'vaultconf.rb'
 require 'vault'
 require 'mocha/test_unit'
+require 'fakefs/safe'
 
 class TestVault < Test::Unit::TestCase
   def setup
@@ -82,7 +83,18 @@ class TestVault < Test::Unit::TestCase
     assert_requested(user_delete_stub)
     assert_requested(user_request_stub_writer)
     assert_requested(user_request_stub_reader)
-
   end
 
+  def test_read_login_from_file
+    FakeFS do
+    # Given my home directory contains a .vaultconf directory containing my login details (NB: Filesystem is mocked as per fakefs)
+      FileUtils.mkdir_p("#{Dir.home}/.vaultconf")
+      File.open("/home/timmeh/.vaultconf/login", "w") {|file| file.write("---\nusername: myusername\npassword: mypassword\n")}
+    # When I read login from file
+      user, password = Vaultconf::Vaultconf.read_login_from_file
+    # Then it captures the correct username and password
+      assert_equal("mypassword", password, 'The password was not retrieved as expected')
+      assert_equal("myusername", user, 'The username was not retrieved as expected')
+    end
+  end
 end

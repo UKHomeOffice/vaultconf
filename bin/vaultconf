@@ -18,6 +18,11 @@ class App
     config = options['c']
     configure_kubernetes = !options['nokube']
 
+    if !user || !password
+      debug 'No username or password specified, retrieving details from config file'
+      user, password = Vaultconf::Vaultconf.read_login_from_file
+    end
+    puts user
     # Authenticate with credentials that are passed into the program, saving the token
     authtoken = Vaultconf::Vaultconf.get_auth_token(user, password, server)
 
