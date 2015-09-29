@@ -34,4 +34,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency('webmock','~> 1.21.0')
   spec.add_development_dependency('test-unit')
   spec.add_development_dependency('mocha', '~> 1.1.0')
+  spec.add_development_dependency('fakefs', '~> 0.6.7')
 end

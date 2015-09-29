@@ -28,6 +28,13 @@ Example usage is included in vaultconf.feature. Please note if the gem isn't ins
 Example policies directory structure is provided in test/resources/policies.
 Example users yaml structure is provided in test/resources/users/users/yaml
 
+In order to not need to define password in the command line vaultconf can read login details from a file called "login" in the .vaultconf directory in your home directory. The format for this file is as follows:
+``` yaml
+---
+username: myusername
+password: mypassword
+```
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `bin/console` for an interactive prompt that will allow you to experiment.
