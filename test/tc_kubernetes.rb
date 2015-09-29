@@ -18,7 +18,7 @@ class TestKubernetes < Test::Unit::TestCase
                          'name' => 'testUser_vault'
                      },
                      'data' => {
-                         'login' => 'e3VzZXJuYW1lOnRlc3RVc2VyLHBhc3N3b3JkOnRlc3RQYXNzd29yZH0=',
+                         'login' => 'e3VzZXJuYW1lOnRlc3RVc2VyLHBhc3N3b3JkOnRlc3RQYXNzd29yZCxtZXRob2Q6dXNlcnBhc3N9',
                      }
     }.to_yaml
 
