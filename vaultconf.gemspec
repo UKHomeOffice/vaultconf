@@ -18,7 +18,7 @@ Gem::Specification.new do |spec|
   spec.homepage      = "TODO: Put your gem's website or public repo URL here."
   spec.license       = "apache"
 
-  spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
+  # spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
   spec.bindir        = "exe"
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
@@ -32,6 +32,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency('vault','~> 0.1.5')
   spec.add_dependency('curb','~> 0.8.8')
   spec.add_dependency('webmock','~> 1.21.0')
+  spec.add_dependency('json','~> 1.8.3')
   spec.add_development_dependency('test-unit')
   spec.add_development_dependency('mocha', '~> 1.1.0')
   spec.add_development_dependency('fakefs', '~> 0.6.7')
