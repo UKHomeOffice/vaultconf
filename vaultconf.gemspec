@@ -29,7 +29,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency('aruba')
   spec.add_development_dependency('rake')
   spec.add_dependency('methadone', '~> 1.9.1')
-  spec.add_dependency('vault','~> 0.1')
+  spec.add_dependency('vault','~> 0.1.5')
   spec.add_dependency('curb','~> 0.8.8')
   spec.add_dependency('webmock','~> 1.21.0')
   spec.add_development_dependency('test-unit')

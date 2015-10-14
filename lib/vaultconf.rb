@@ -19,14 +19,6 @@ module Vaultconf
       return login_yaml['username'], login_yaml['password']
     end
 
-    def self.get_auth_token(username, password, server)
-      url = "#{server}/v1/auth/userpass/login/#{username}"
-      http = Curl.post(url, '{"password":"' + password + '"}')
-      body = JSON.parse(http.body_str)
-      token = body['auth']['client_token']
-      return token
-    end
-
     def reconcile_policies_to_vault(policy_namespace_dir)
       policy_file_names = Array.new
       policy_names = Array.new
@@ -45,7 +37,7 @@ module Vaultconf
       existing_policies = @vault.sys.policies
       existing_policies.each do |existing_policy|
         unless new_policies.include?(existing_policy) || existing_policy == 'root'
-          @vault.delete(existing_policy)
+          @vault.sys.delete_policy(existing_policy)
         end
       end
     end
@@ -72,13 +64,19 @@ module Vaultconf
         if configure_kubernetes
           debug "Looking for historic users to remove for namespace #{namespace_name}"
           remove_old_users(users_to_add, namespace_name, @vault) # No way to list users in vault so can do this only with kubernetes
-          users_to_add.each do |user|
-            login = add_user_to_vault(user, namespace_name)
-            logins.push(login)
-          end
+          add_new_users_to_vault(logins, namespace_name, users_to_add)
+        else
+          add_new_users_to_vault(logins, namespace_name, users_to_add)
         end
       end
       return logins
+    end
+
+    def add_new_users_to_vault(logins, namespace_name, users_to_add)
+      users_to_add.each do |user|
+        login = add_user_to_vault(user, namespace_name)
+        logins.push(login)
+      end
     end
 
     def remove_old_users(new_users, namespace, vault)
@@ -96,7 +94,7 @@ module Vaultconf
 
     def add_user_to_vault(user, namespace)
       name = user['name']
-      policies = user['policies'].join(',')
+      policies = user['policies'].map{|policy| "#{namespace}_#{policy}"}.join(',')
       password = Helpers.generate_password
       debug "Writing user #{namespace}_#{name} to vault"
       @vault.logical.write("auth/userpass/users/#{namespace}_#{name}", password: password, policies: policies)

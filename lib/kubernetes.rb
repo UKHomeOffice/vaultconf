@@ -18,7 +18,7 @@ module Kubernetes
         password = login[:password]
         namespace = login[:namespace].gsub('_', '-') # Kubernetes doesn't allow underscores in namespaces. Vault doesn't allow dashes for secret names, hence this substitution
         secret_name = username + '-vault'
-        secretYaml = create_secret_yaml(secret_name, username, password)
+        secretYaml = create_secret_yaml(secret_name, username, password, namespace)
         if @kube_service.secret_exists(secret_name, namespace)
           debug "Deleting kubernetes secret #{secret_name}-vault from namespace #{namespace}"
           @kube_service.delete_secret(secret_name, namespace)
@@ -28,14 +28,14 @@ module Kubernetes
       end
     end
 
-    def create_secret_yaml(secret_name, username, password)
+    def create_secret_yaml(secret_name, username, password, namespace)
       secret_yaml = {'apiVersion' => 'v1',
                      'kind' => 'Secret',
                      'metadata' => {
                          'name' => secret_name
                      },
                      'data' => {
-                         'login' => Base64.encode64("{username:#{username},password:#{password},method:userpass}"),
+                         'login' => Base64.encode64("{\"username\":\"#{namespace}_#{username}\",\"password\":\"#{password}\",\"method\":\"userpass\"}"),
                      }
       }.to_yaml
 
