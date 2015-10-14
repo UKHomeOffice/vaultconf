@@ -4,7 +4,11 @@ require 'json'
 
 Given(/^I have a vault server running$/) do
   setup_vault_server
-  login_to_vault
+  address = 'http://127.0.0.1:8200'
+  username = 'user'
+  password = 'password'
+  Vault.address = address
+  Vault.auth.userpass(username, password)
 end
 
 
@@ -38,15 +42,6 @@ def setup_vault_server
   `vault write -address=http://localhost:8200 auth/userpass/users/user password=password policies=root`
 end
 
-def login_to_vault
-  address = 'http://127.0.0.1:8200'
-  Vault.address = address
-  username = 'user'
-  loginUrl = "#{address}/v1/auth/userpass/login/#{username}"
-  http = Curl.post(loginUrl, '{"password":"password"}')
-  body = JSON.parse(http.body_str)
-  Vault.token = body['auth']['client_token']
-end
 
 And(/^vault already contains policies$/) do
   `bundle exec bin/vaultconf policies test/resources/policies -u user -p password -a http://localhost:8200 -c test/resources/policies`

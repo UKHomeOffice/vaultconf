@@ -16,19 +16,6 @@ class TestVault < Test::Unit::TestCase
     @@vault = Vaultconf::Vaultconf.new(Vault, @@mock_kube_service)
   end
 
-  def test_login
-    expected_auth_token = 'authtoken123'
-    stub_request(:post, "http://#{@@server}/v1/auth/userpass/login/#{@@user}").
-        with(:body => "{\"password\":\"#{@@password}\"}").
-        to_return(:status => 200, :body => '{"lease_id":"","renewable":false,"lease_duration":0,"data":null,
-          "auth":{"client_token":"'+expected_auth_token+'","policies":["root"],"metadata":{"username":"user"},
-          "lease_duration":0,"renewable":false}}', :headers => {})
-
-    auth_token = Vaultconf::Vaultconf.get_auth_token(@@user, @@password, @@server)
-
-    assert auth_token == expected_auth_token
-  end
-
   def test_reconcile_policies_to_vault
     # Given configuration containing new policies
     policies_path = File.expand_path('../resources/simple_policies', __FILE__)
@@ -38,7 +25,7 @@ class TestVault < Test::Unit::TestCase
     read_all_policies_stub = stub_request(:get, "http://#{@@server}/v1/sys/policy").
         to_return(:status => 200, :body => "{\"policies\":[\"#{old_policy_name}\",\"root\"]} ", :headers => {'content_type' => 'application/json'})
 
-    delete_policy_stub = stub_request(:delete, "http://#{@@server}/#{old_policy_name}").
+    delete_policy_stub = stub_request(:delete, "http://#{@@server}/v1/sys/policy/#{old_policy_name}").
         to_return(:status => 200, :body => "", :headers => {})
 
 
@@ -67,11 +54,11 @@ class TestVault < Test::Unit::TestCase
     @@mock_kube_service.expects(:get_user_secrets).with('dev').returns(["#{namespace}-#{old_user_name}"])
 
     user_request_stub_writer = stub_request(:put, "http://#{@@server}/v1/auth/userpass/users/#{namespace}_MrWrite").
-        with(:body => /{\"password\":\".*\",\"policies\":\"writer,reader\"}/).
+        with(:body => /{\"password\":\".*\",\"policies\":\"dev_writer,dev_reader\"}/).
         to_return(:status => 200, :body => "", :headers => {})
 
     user_request_stub_reader = stub_request(:put, "http://#{@@server}/v1/auth/userpass/users/#{namespace}_MrRead").
-        with(:body => /{\"password\":\".*\",\"policies\":\"reader\"}/).
+        with(:body => /{\"password\":\".*\",\"policies\":\"dev_reader\"}/).
         to_return(:status => 200, :body => "", :headers => {})
 
     user_delete_stub = stub_request(:delete, "http://#{@@server}/v1/auth/userpass/users/#{namespace}_#{old_user_name}").
@@ -88,8 +75,9 @@ class TestVault < Test::Unit::TestCase
   def test_read_login_from_file
     FakeFS do
     # Given my home directory contains a .vaultconf directory containing my login details (NB: Filesystem is mocked as per fakefs)
+      puts Dir.home
       FileUtils.mkdir_p("#{Dir.home}/.vaultconf")
-      File.open("/home/timmeh/.vaultconf/login", "w") {|file| file.write("---\nusername: myusername\npassword: mypassword\n")}
+      File.open("#{Dir.home}/.vaultconf/login", "w") {|file| file.write("---\nusername: myusername\npassword: mypassword\n")}
     # When I read login from file
       user, password = Vaultconf::Vaultconf.read_login_from_file
     # Then it captures the correct username and password

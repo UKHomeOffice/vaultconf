@@ -9,16 +9,17 @@ class TestKubernetes < Test::Unit::TestCase
   def test_create_secret_yaml
     username = 'testUser'
     password = 'testPassword'
+    namespace = 'myNamespace'
     kube_service = mock
     kube_controller = Kubernetes::KubernetesController.new(kube_service)
-    generated_yaml = kube_controller.create_secret_yaml(username + '_vault', username, password)
+    generated_yaml = kube_controller.create_secret_yaml(username + '_vault', username, password, namespace)
     expected_yaml = {'apiVersion' => 'v1',
                      'kind' => 'Secret',
                      'metadata' => {
                          'name' => 'testUser_vault'
                      },
                      'data' => {
-                         'login' => 'e3VzZXJuYW1lOnRlc3RVc2VyLHBhc3N3b3JkOnRlc3RQYXNzd29yZCxtZXRob2Q6dXNlcnBhc3N9',
+                         'login' => 'eyJ1c2VybmFtZSI6Im15TmFtZXNwYWNlX3Rlc3RVc2VyIiwicGFzc3dvcmQiOiJ0ZXN0UGFzc3dvcmQiLCJtZXRob2QiOiJ1c2VycGFzcyJ9',
                      }
     }.to_yaml
 

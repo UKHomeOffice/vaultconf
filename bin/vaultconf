@@ -22,13 +22,10 @@ class App
       debug 'No username or password specified, retrieving details from config file'
       user, password = Vaultconf::Vaultconf.read_login_from_file
     end
-    puts user
-    # Authenticate with credentials that are passed into the program, saving the token
-    authtoken = Vaultconf::Vaultconf.get_auth_token(user, password, server)
 
     # Setup Vault singleton
     Vault.address = server
-    Vault.token = authtoken
+    Vault.auth.userpass(user, password)
 
     kube_service = Kubernetes::KubernetesService.new
     vault = Vaultconf::Vaultconf.new(Vault, kube_service)
@@ -42,13 +39,6 @@ class App
     else
         Kernel.abort("Action must be either policies or users, you inputted #{action}")
     end
-
-    # Open the yaml file pointed to in the users argument
-
-    # Iterate through each of the users
-    # Generate a password
-    # Use vault to add the user with the policies associated with the user
-
   end
 
   # supplemental methods here

@@ -19,14 +19,6 @@ module Vaultconf
       return login_yaml['username'], login_yaml['password']
     end
 
-    def self.get_auth_token(username, password, server)
-      url = "#{server}/v1/auth/userpass/login/#{username}"
-      http = Curl.post(url, '{"password":"' + password + '"}')
-      body = JSON.parse(http.body_str)
-      token = body['auth']['client_token']
-      return token
-    end
-
     def reconcile_policies_to_vault(policy_namespace_dir)
       policy_file_names = Array.new
       policy_names = Array.new
@@ -45,7 +37,7 @@ module Vaultconf
       existing_policies = @vault.sys.policies
       existing_policies.each do |existing_policy|
         unless new_policies.include?(existing_policy) || existing_policy == 'root'
-          @vault.delete(existing_policy)
+          @vault.sys.delete_policy(existing_policy)
         end
       end
     end
@@ -96,9 +88,10 @@ module Vaultconf
 
     def add_user_to_vault(user, namespace)
       name = user['name']
-      policies = user['policies'].join(',')
+      policies = user['policies'].map{|policy| "#{namespace}_#{policy}"}.join(',')
       password = Helpers.generate_password
       debug "Writing user #{namespace}_#{name} to vault"
+      puts "Writing user #{namespace}_#{name} to vault"
       @vault.logical.write("auth/userpass/users/#{namespace}_#{name}", password: password, policies: policies)
       login = {:namespace => namespace, :username => name, :password => password}
       return login
