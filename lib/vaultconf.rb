@@ -47,8 +47,12 @@ module Vaultconf
       policies.each do |policy|
         policy_name = policy[1]
         policy_file_name = policy[0]
-        policy_raw = File.read(policy_file_name)
-        @vault.sys.put_policy(policy_name, policy_raw)
+        policy_yaml = YAML::load_file(policy_file_name)
+        policy_json = policy_yaml.to_json.to_s
+        puts 'TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST '
+        puts policy_yaml
+        puts policy_json
+        @vault.sys.put_policy(policy_name, policy_json)
         debug "#{policy_name} policy written to vault"
       end
     end

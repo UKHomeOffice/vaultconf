@@ -1,7 +1,0 @@
-{
-  "path": {
-    "secret/*": {
-      "policy": "read"
-    }
-  }
-}
