@@ -62,7 +62,7 @@ And(/^I should be able to see the users and their associated policies in vault$/
   MrRead = Vault.logical.read("auth/userpass/users/dev_myproject_MrRead")
   AnotherUser = Vault.logical.read("auth/userpass/users/uat_anotherproject_AnotherUser")
 
-  expect(MrWrite.values[3][:policies]).to eq('writer,reader')
-  expect(MrRead.values[3][:policies]).to eq('reader')
-  expect(AnotherUser.values[3][:policies]).to eq('apolicy')
+  expect(MrWrite.values[3][:policies]).to eq('dev_myproject_writer,dev_myproject_reader')
+  expect(MrRead.values[3][:policies]).to eq('dev_myproject_reader')
+  expect(AnotherUser.values[3][:policies]).to eq('uat_anotherproject_apolicy')
 end

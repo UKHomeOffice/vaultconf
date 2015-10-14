@@ -64,13 +64,19 @@ module Vaultconf
         if configure_kubernetes
           debug "Looking for historic users to remove for namespace #{namespace_name}"
           remove_old_users(users_to_add, namespace_name, @vault) # No way to list users in vault so can do this only with kubernetes
-          users_to_add.each do |user|
-            login = add_user_to_vault(user, namespace_name)
-            logins.push(login)
-          end
+          add_new_users_to_vault(logins, namespace_name, users_to_add)
+        else
+          add_new_users_to_vault(logins, namespace_name, users_to_add)
         end
       end
       return logins
+    end
+
+    def add_new_users_to_vault(logins, namespace_name, users_to_add)
+      users_to_add.each do |user|
+        login = add_user_to_vault(user, namespace_name)
+        logins.push(login)
+      end
     end
 
     def remove_old_users(new_users, namespace, vault)
@@ -91,7 +97,6 @@ module Vaultconf
       policies = user['policies'].map{|policy| "#{namespace}_#{policy}"}.join(',')
       password = Helpers.generate_password
       debug "Writing user #{namespace}_#{name} to vault"
-      puts "Writing user #{namespace}_#{name} to vault"
       @vault.logical.write("auth/userpass/users/#{namespace}_#{name}", password: password, policies: policies)
       login = {:namespace => namespace, :username => name, :password => password}
       return login
