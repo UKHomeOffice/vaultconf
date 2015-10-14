@@ -4,27 +4,15 @@ A command line tool to allow mass configuration updates in vault with support in
 - update of users in Vault
 
 ## Installation
-Add this line to your application's Gemfile:
+This tool has not yet been setup as a Ruby gem, though it would be easy to do so. Instead we recommend running using docker to ensure no dependency issues:
 
-```ruby
-gem 'vaultconf'
-```
-
-And then execute:
-
-    $ bundle install
-
-Or install it yourself as:
-
-    $ gem install vaultconf
-    
-Require it in your ruby code using:
-require 'vaultconf'
+e.g. docker run --net=host -v policies:/policies -ti quay.io/ukhomeofficedigital/vaultconf policies -c /policies -u user -p password -a http://localhost:8200 --nokube
+NB: In this example --net=host is needed as we are accessing a local vault server. This is not required for accessing remote vault servers.
 
 ## Usage
 Run with option --help to show command line help.
 
-Example usage is included in vaultconf.feature. Please note if the gem isn't installed you will need to run using bundle exec bin/vaultconf ....etc
+Example usage is included in vaultconf.feature.
 Example policies directory structure is provided in test/resources/policies.
 Example users yaml structure is provided in test/resources/users/users/yaml
 
