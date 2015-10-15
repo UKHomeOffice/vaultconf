@@ -5,6 +5,7 @@ require 'methadone'
 require 'vaultconf.rb'
 require 'kubernetes.rb'
 require 'vault'
+require 'highline/import'
 
 class App
   include Methadone::Main
@@ -21,10 +22,15 @@ class App
     if !server
       server = ENV['VAULT_ADDR']
     end
-
-    if !user || !password
+    
+    if (!user || !password) && File.exist?("#{Dir.home}/.vaultconf/login")
       debug 'No username or password specified, retrieving details from config file'
       user, password = Vaultconf::Vaultconf.read_login_from_file
+    elsif user && !password
+      password = ask('Please enter your password: ') {|pw| pw.echo=false}
+      puts ''
+    else
+      Kernel.abort('No login credentials for vault found')
     end
 
     # Setup Vault singleton
@@ -76,7 +82,6 @@ class App
   on("-a VAL", "--address", "URL for the vault server. If no address is specified VAULT_ADDR environment variable will be used")
   on("--nokube", "Configure only Vault, don't touch kubernetes")
   on("-c VAL", "--config", "Specifies either the directory containing vault policies to be added, or the file containing users to be added")
-  on("-v", "--verbose", "Verbose logging")
 
   version Vaultconf::VERSION
 
