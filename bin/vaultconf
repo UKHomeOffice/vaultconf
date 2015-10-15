@@ -29,8 +29,6 @@ class App
     elsif user && !password
       password = ask('Please enter your password: ') {|pw| pw.echo=false}
       puts ''
-    else
-      Kernel.abort('No login credentials for vault found')
     end
 
     # Setup Vault singleton
