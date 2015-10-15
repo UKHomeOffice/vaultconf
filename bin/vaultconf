@@ -72,7 +72,6 @@ class App
   on("-a VAL", "--address", "URL for the vault server")
   on("--nokube", "Configure only Vault, don't touch kubernetes")
   on("-c VAL", "--config", "Specifies either the directory containing vault policies to be added, or the file containing users to be added")
-  on("-v", "--verbose", "Verbose logging")
 
   version Vaultconf::VERSION
 
