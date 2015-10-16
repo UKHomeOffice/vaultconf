@@ -44,8 +44,10 @@ class App
     elsif action == 'users'
       logins = vault.reconcile_users_to_vault(config, configure_kubernetes)
       if configure_kubernetes then kube_controller.add_logins_to_kubernetes(logins) end
+    elsif action == 'secrets'
+      vault.add_secrets_to_vault(config)
     else
-        Kernel.abort("Action must be either policies or users, you inputted #{action}")
+        Kernel.abort("Action must be either policies, users or secrets, you inputted #{action}")
     end
   end
 

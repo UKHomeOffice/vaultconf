@@ -40,11 +40,13 @@ def setup_vault_server
   sleep 2
   `vault auth-enable -address=http://localhost:8200 userpass`
   `vault write -address=http://localhost:8200 auth/userpass/users/user password=password policies=root`
+  `vault mount -path=dev_myproject_aws  -address=http://localhost:8200 aws`
+  `vault mount -address=http://localhost:8200 pki`
 end
 
 
 And(/^vault already contains policies$/) do
-  `bundle exec bin/vaultconf policies test/resources/policies -u user -p password -a http://localhost:8200 -c test/resources/policies`
+  `bundle exec bin/vaultconf policies -u user -p password -a http://localhost:8200 -c test/resources/policies`
 end
 
 
@@ -58,11 +60,28 @@ Then(/^I should get a json output of the users and their generated passwords$/) 
 end
 
 And(/^I should be able to see the users and their associated policies in vault$/) do
-  MrWrite = Vault.logical.read("auth/userpass/users/dev_myproject_MrWrite")
-  MrRead = Vault.logical.read("auth/userpass/users/dev_myproject_MrRead")
-  AnotherUser = Vault.logical.read("auth/userpass/users/uat_anotherproject_AnotherUser")
+  MrWrite = Vault.logical.read('auth/userpass/users/dev_myproject_MrWrite')
+  MrRead = Vault.logical.read('auth/userpass/users/dev_myproject_MrRead')
+  AnotherUser = Vault.logical.read('auth/userpass/users/uat_anotherproject_AnotherUser')
 
   expect(MrWrite.values[3][:policies]).to eq('dev_myproject_writer,dev_myproject_reader')
   expect(MrRead.values[3][:policies]).to eq('dev_myproject_reader')
   expect(AnotherUser.values[3][:policies]).to eq('uat_anotherproject_apolicy')
+end
+
+
+And(/^I do "vaultconf secrets \-c test\/resources\/secrets \-u user \-p password \-a http:\/\/localhost:8200 \-\-nokube"$/) do
+  `bundle exec bin/vaultconf secrets -c test/resources/secrets -u user -p password -a http://localhost:8200 --nokube`
+end
+
+Then(/^I should be able to see these secrets in vault$/) do
+  all_powerful = Vault.logical.read('dev_myproject_aws/roles/all-powerful')
+  mini_role = Vault.logical.read('dev_myproject_aws/roles/mini-role')
+  example_dot_com = Vault.logical.read('pki/roles/example-dot-com')
+
+  expect(all_powerful.values[3][:policy]).to eq('{"Version":"2012-10-17","Statement":{"Effect":"Allow","Action":"iam:*","Resource":"*"}}')
+  expect(mini_role.values[3][:policy]).to eq('{"Version":"2012-10-17","Statement":{"Effect":"Allow","Action":"iam:just-this-one","Resource":"*"}}')
+  expect(example_dot_com.values[3][:allowed_base_domain]).to eq('example.com')
+  expect(example_dot_com.values[3][:allow_subdomains]).to eq(true)
+  expect(example_dot_com.values[3][:max_ttl]).to eq('72h')
 end

@@ -8,4 +8,9 @@ module Helpers
   def self.generate_password
     return SecureRandom.hex
   end
+
+  def self.is_yaml_file(file_or_folder)
+    extension = File.extname(file_or_folder)
+    return extension == '.yaml' || extension == '.yml'
+  end
 end
