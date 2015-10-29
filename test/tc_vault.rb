@@ -85,4 +85,35 @@ class TestVault < Test::Unit::TestCase
       assert_equal("myusername", user, 'The username was not retrieved as expected')
     end
   end
+
+  def test_add_secrets_to_vault
+    secrets_path = File.expand_path('../resources/secrets', __FILE__)
+
+    all_powerful_stub = stub_request(:put, "http://#{@@server}/v1/dev_myproject_aws/roles/all-powerful").
+        with(:body => "{\"policy\":\"{\\\"Version\\\":\\\"2012-10-17\\\",\\\"Statement\\\":{\\\"Effect\\\":\\\"Allow\\\",\\\"Action\\\":\\\"iam:*\\\",\\\"Resource\\\":\\\"*\\\"}}\"}").
+        to_return(:status => 200, :body => "", :headers => {})
+
+    mini_role_stub = stub_request(:put, "http://#{@@server}/v1/dev_myproject_aws/roles/mini-role").
+        with(:body => "{\"policy\":\"{\\\"Version\\\":\\\"2012-10-17\\\",\\\"Statement\\\":{\\\"Effect\\\":\\\"Allow\\\",\\\"Action\\\":\\\"iam:just-this-one\\\",\\\"Resource\\\":\\\"*\\\"}}\"}").
+        to_return(:status => 200, :body => "", :headers => {})
+
+    example_dot_com_stub = stub_request(:put, "http://#{@@server}/v1/pki/roles/example-dot-com").
+        with(:body => "{\"allowed_base_domain\":\"example.com\",\"allow_subdomains\":true,\"max_ttl\":\"72h\"}").
+        to_return(:status => 200, :body => "", :headers => {})
+
+    @@vault.add_secrets_to_vault(secrets_path)
+
+    assert_requested(all_powerful_stub)
+    assert_requested(mini_role_stub)
+    assert_requested(example_dot_com_stub)
+  end
+
+  def test_find_secret_files
+    secrets_path = File.expand_path('../resources/secrets', __FILE__)
+    secret_files = @@vault.find_secret_files(secrets_path)
+
+    assert_includes(secret_files, File.expand_path('../resources/secrets/dev_myproject/aws_backend/all-powerful.yaml',__FILE__))
+    assert_includes(secret_files, File.expand_path('../resources/secrets/dev_myproject/aws_backend/mini-role.yaml',__FILE__))
+    assert_includes(secret_files, File.expand_path('../resources/secrets/dev_myproject/ca_backend/example-dot-com.yaml',__FILE__))
+  end
 end

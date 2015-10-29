@@ -1,4 +1,4 @@
-require "vaultconf/version"
+require 'vaultconf/version'
 require 'curb'
 require 'json'
 require 'yaml'
@@ -9,6 +9,7 @@ module Vaultconf
   class Vaultconf
     include Methadone::Main
     include Methadone::CLILogging
+
     def initialize(vault, kube_service)
       @vault=vault
       @kube_service=kube_service
@@ -17,6 +18,53 @@ module Vaultconf
     def self.read_login_from_file
       login_yaml = YAML.load_file("#{Dir.home}/.vaultconf/login")
       return login_yaml['username'], login_yaml['password']
+    end
+
+    def add_secrets_to_vault(secrets_dir)
+      secret_files = find_secret_files(secrets_dir)
+      # For each secret file
+      secret_files.each do |secret_file|
+        add_secret_to_vault(secret_file)
+      end
+    end
+
+    def add_secret_to_vault(secret_file)
+      secret = YAML::load_file(secret_file)
+      transformed_values = convert_nested_hashes_to_json(secret['values'])
+      Vault.logical.write(secret['write_path'], transformed_values)
+    end
+
+    def convert_nested_hashes_to_json(secret_values)
+      transformed_secret_values = Hash.new()
+
+      secret_values.each do |secret_value|
+        key = secret_value.keys[0]
+        value = secret_value[key]
+
+        if (value.is_a? String) || value == true || value == false
+          transformed_secret_values[key] = value
+        elsif value.is_a? Hash
+          transformed_secret_values[key] = value.to_json
+        else
+          Kernel.abort('Invalid key value pairs for the secret. Values must be either strings or valid yaml')
+        end
+      end
+
+      return transformed_secret_values
+    end
+
+    def find_secret_files(secrets_dir)
+      secret_files = []
+      Dir.foreach(secrets_dir) do |file_or_folder|
+        next if file_or_folder == '.' or file_or_folder == '..'
+        file_or_folder = secrets_dir + '/' + file_or_folder
+        if Helpers.is_yaml_file(file_or_folder)
+          secret_files.push(file_or_folder)
+        elsif File.directory?(file_or_folder)
+          secret_files.concat(find_secret_files(file_or_folder))
+        end
+      end
+      return secret_files
     end
 
     def reconcile_policies_to_vault(policy_namespace_dir)
@@ -95,7 +143,7 @@ module Vaultconf
 
     def add_user_to_vault(user, namespace)
       name = user['name']
-      policies = user['policies'].map{|policy| "#{namespace}_#{policy}"}.join(',')
+      policies = user['policies'].map { |policy| "#{namespace}_#{policy}" }.join(',')
       password = Helpers.generate_password
       debug "Writing user #{namespace}_#{name} to vault"
       @vault.logical.write("auth/userpass/users/#{namespace}_#{name}", password: password, policies: policies)
