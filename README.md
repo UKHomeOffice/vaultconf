@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/UKHomeOffice/vaultconf.svg)](https://travis-ci.org/UKHomeOffice/vaultconf)
+
 # Vaultconf
 A command line tool to allow mass configuration updates in vault with support included for kubernetes. Functions include:
 - update of policies in vault
