@@ -4,6 +4,8 @@
 A command line tool to allow mass configuration updates in vault with support included for kubernetes. Functions include:
 - update of policies in vault
 - update of users in Vault
+ 
+For more context please see this [blog post](http://timturnstechie.blogspot.co.uk/2015/10/vaultconf-managing-vault-logins-for.html).
 
 ## Installation
 This tool has not yet been setup as a Ruby gem, though it would be easy to do so. Instead we recommend running using docker to ensure no dependency issues:
